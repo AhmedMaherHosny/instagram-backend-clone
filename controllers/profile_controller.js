@@ -19,7 +19,6 @@ module.exports.getProfileById = asyncHandler(async (req, res) => {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "user not found!" });
   }
-  // user (_id username bio avatar) + num of (posts followers following) + follow button or unfollow + posts(_id imageOrVideoUrl)
   let posts = await Post.find({ postedBy: req.params.id })
     .sort({ createdAt: -1 })
     .select("_id imageOrVideoUrl");
@@ -112,8 +111,8 @@ module.exports.editProfile = asyncHandler(async (req, res) => {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Please select an image" });
   }
-  user = await User.findOne({username : req.body.username});
-  if (user && user.id != req.user.id){
+  user = await User.findOne({ username: req.body.username });
+  if (user && user.id != req.user.id) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "This username already exist" });
@@ -127,9 +126,9 @@ module.exports.editProfile = asyncHandler(async (req, res) => {
   const mediaRes = await mediaResPromise;
   const updatedUser = await User.findByIdAndUpdate(
     req.user.id,
-    { 
-      username: req.body.username, 
-      avatar: mediaRes.secure_url
+    {
+      username: req.body.username,
+      avatar: mediaRes.secure_url,
     },
     { new: true }
   ).select(
@@ -137,4 +136,22 @@ module.exports.editProfile = asyncHandler(async (req, res) => {
   );
 
   return res.status(StatusCodes.OK).json({ user: updatedUser });
+});
+
+/**
+ *   @desc Get user header by id
+ *   @route /api/profile/header/:id
+ *   @method Get
+ *   @access private (must be authenticated)
+ **/
+module.exports.getUserHeaderById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).select(
+    "username isOnline avatar lastSeen"
+  );
+  if (!user) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "user not found!" });
+  }
+  return res.status(StatusCodes.OK).json({ user });
 });

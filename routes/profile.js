@@ -5,6 +5,7 @@ const {
   getProfileById,
   getProfilePostsById,
   editProfile,
+  getUserHeaderById,
 } = require("../controllers/profile_controller");
 const { multerConfigProfile } = require("../utils/multer");
 
@@ -18,5 +19,8 @@ router.route("/:id/posts").get(verifyToken, getProfilePostsById);
 router
   .route("/edit")
   .put(verifyToken, multerConfigProfile.single("image"), editProfile);
+
+// /api/profile/header/:id
+router.route("/header/:id").get(verifyToken, getUserHeaderById);
 
 module.exports = router;

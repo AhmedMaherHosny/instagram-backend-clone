@@ -11,6 +11,18 @@ const {
   multerError,
 } = require("./middlewares/error_handler");
 
+// process.env.IP_ADDR || "localhost",
+// Start server
+const server = app.listen(
+  process.env.PORT,
+  process.env.IP_ADDR || "localhost",
+  () => {
+    console.log(`> server is running in ${process.env.NODE_ENV}`);
+  }
+);
+
+const io = require("socket.io")(server);
+
 // Connect to database
 connectToDb();
 
@@ -35,6 +47,8 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/posts", require("./routes/posts"));
 app.use("/api/profile", require("./routes/profile"));
+app.use("/api/chat", require("./routes/chat"));
+app.use("/api/message", require("./routes/message"));
 
 //Error not found 404
 app.use(notFound);
@@ -44,9 +58,3 @@ app.use(errorHandler);
 
 // multer error
 app.use(multerError);
-
-// process.env.IP_ADDR || "localhost",
-// Start server
-app.listen(process.env.PORT, process.env.IP_ADDR || "localhost", () => {
-  console.log(`> server is running in ${process.env.NODE_ENV}`);
-});
