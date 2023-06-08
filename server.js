@@ -10,6 +10,7 @@ const {
   notFound,
   multerError,
 } = require("./middlewares/error_handler");
+const { Message } = require("./models/Message");
 
 // process.env.IP_ADDR || "localhost",
 // Start server
@@ -22,6 +23,7 @@ const server = app.listen(
 );
 
 const io = require("socket.io")(server);
+io.on("connection", onConnected);
 
 // Connect to database
 connectToDb();
@@ -58,3 +60,33 @@ app.use(errorHandler);
 
 // multer error
 app.use(multerError);
+
+// socket callback
+function onConnected(socket) {
+  socket.on("joinRoom", (chatId) => {
+    socket.join(chatId);
+    console.log(`socket id : ${socket.id} joined room : ${chatId}`);
+  });
+
+  socket.on("message", async (data) => {
+    const regex = /chatId=(.*?), senderId=(.*?), content=(.*)/;
+    const match = data.match(regex);
+
+    if (match) {
+      const chatId = match[1];
+      const senderId = match[2];
+      const content = match[3].slice(0, -1);
+      const newMessage = new Message({
+        chatId: chatId,
+        senderId: senderId,
+        content: content,
+      });
+      const message = await newMessage.save();
+      io.to(chatId).emit("message", message);
+    }
+  });
+
+  socket.on("feedback", (data) => {
+    socket.broadcast.emit("feedback", data);
+  });
+}
