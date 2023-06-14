@@ -65,7 +65,6 @@ app.use(multerError);
 function onConnected(socket) {
   socket.on("joinRoom", (chatId) => {
     socket.join(chatId);
-    console.log(`socket id : ${socket.id} joined room : ${chatId}`);
   });
 
   socket.on("message", async (data) => {
@@ -86,7 +85,9 @@ function onConnected(socket) {
     }
   });
 
-  socket.on("feedback", (data) => {
-    socket.broadcast.emit("feedback", data);
+  socket.on("typing", (data) => {
+    const { chatId, senderId } = data;
+    socket.to(chatId).emit("typing", senderId);
   });
+
 }
